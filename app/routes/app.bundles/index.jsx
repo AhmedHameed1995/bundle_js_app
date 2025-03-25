@@ -12,12 +12,11 @@ import ViewComponent from "./components/ViewComponent";
 import EditComponent from "./components/EditComponent";
 import DeleteComponent from "./components/DeleteComponent";
 import LoadingComponent from "./components/LoadingComponent";
-import { getBundles, createBundle } from "./services/bundleServices";
-
+import { getBundles, updateBundle } from "./services/bundleServices";
+import { authenticate } from "../../shopify.server";
 
 // Main Page Component
 export default function BundlesPage() {
-
   // Get data from loader
   const bundles = useLoaderData() || [];
   
@@ -41,16 +40,19 @@ export default function BundlesPage() {
     setTimeout(() => {
       setActiveComponent(component);
       setIsLoading(false);
-    }, 2000);
+    }, 100);
   };
 
   // Handler for updating a bundle
-  const handleSave = (updatedItem) => {
-    // Will be replaced with actual API call
-    console.log("Saving updated item:", updatedItem);
-    
-    // Show loading spinner
-    changeComponent("index");
+  const handleSave = async (updatedItem) => {
+    try {
+      // Perform the update directly here if you want to handle it client-side
+      // Otherwise, the form submission in EditComponent will trigger the server-side update
+      console.log("Saving updated item:", updatedItem);
+      changeComponent("index");
+    } catch (error) {
+      console.error("Error saving item:", error);
+    }
   };
 
   // Handler for deleting a bundle
@@ -134,6 +136,9 @@ export default function BundlesPage() {
 // Loader function - Will be used to fetch data from backend
 export async function loader({ request }) {
   try {
+    // [START authenticate]
+    const { admin } = await authenticate.admin(request);
+    // [END authenticate]
     const bundles = await getBundles();
     return json(bundles);
   } catch (error) {
@@ -142,15 +147,39 @@ export async function loader({ request }) {
   }
 }
 
-// Additional Function
-// Action function to handle form submissions for adding a new bundle
-export async function action({ request }) {
+// Action function to handle form submissions
+export async function action({ request, params }) {
+
+  const { session } = await authenticate.admin(request);
+  const { shop } = session;
   const formData = await request.formData();
-  try {
-    await createBundle(formData);
-    return redirect("/bundles");
-  } catch (error) {
-    console.error("Error in action", error);
-    return json({ error: "Failed to create bundle" }, { status: 500 });
+  const actionType = formData.get("_action");
+
+  if (actionType === "edit") {
+    console.log(formData)
+    const id = formData.get("id");
+    const name = formData.get("name");
+    const description = formData.get("description");
+
+    if (!id || !name || !description) {
+      return json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    try {
+      await updateBundle(id, { name, description });
+      // return redirect("/bundles");
+
+       // Fetch updated bundles
+       const bundles = await getBundles();
+      
+       return json(bundles);
+       
+    } catch (error) {
+      console.error("Error updating bundle:", error);
+      return json({ error: "Failed to update bundle" }, { status: 500 });
+    }
   }
+  
+  // If other actions are present, handle them here
+  return redirect("/bundles");
 }

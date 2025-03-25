@@ -15,7 +15,7 @@ export async function getBundles() {
 }
 
 export async function createBundle(formData) {
-  const title = formData.get("title");
+  const title = formData.get("name");
   const description = formData.get("description");
   try {
     return await prisma.bundle.create({
@@ -30,7 +30,7 @@ export async function createBundle(formData) {
 export async function updateBundle(id, data) {
   try {
     return await prisma.bundle.update({
-      where: { id },
+      where: { id: id }, 
       data,
     });
   } catch (error) {

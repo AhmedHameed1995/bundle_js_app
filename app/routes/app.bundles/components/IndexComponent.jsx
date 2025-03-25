@@ -6,7 +6,7 @@ const IndexComponent = ({ data, onEdit, onView, onDelete }) => {
     item.id,
     item.name,
     item.description,
-    new Date(item.createdAt).toLocaleDateString(),
+    new Date(item.createdAt).toISOString(),
     <ButtonGroup key={`actions-${item.id}`}>
       <Button onClick={() => onView(item)} size="slim" primary>View</Button>
       <Button onClick={() => onEdit(item)} size="slim" primary>Edit</Button>

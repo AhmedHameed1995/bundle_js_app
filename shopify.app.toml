@@ -3,7 +3,7 @@
 client_id = "d1b102200bb58a6337d07928a65a210d"
 name = "bundle_with_javascript"
 handle = "bundle_with_javascript"
-application_url = "https://decreased-legends-susan-choice.trycloudflare.com"
+application_url = "https://bacteria-alike-beginners-outsourcing.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://decreased-legends-susan-choice.trycloudflare.com/auth/callback",
-  "https://decreased-legends-susan-choice.trycloudflare.com/auth/shopify/callback",
-  "https://decreased-legends-susan-choice.trycloudflare.com/api/auth/callback"
+  "https://bacteria-alike-beginners-outsourcing.trycloudflare.com/auth/callback",
+  "https://bacteria-alike-beginners-outsourcing.trycloudflare.com/auth/shopify/callback",
+  "https://bacteria-alike-beginners-outsourcing.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
