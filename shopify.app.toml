@@ -1,0 +1,37 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "d1b102200bb58a6337d07928a65a210d"
+name = "bundle_with_javascript"
+handle = "bundle_with_javascript"
+application_url = "https://decreased-legends-susan-choice.trycloudflare.com"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+dev_store_url = "testing-matrixify-export.myshopify.com"
+include_config_on_deploy = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "write_products"
+
+[auth]
+redirect_urls = [
+  "https://decreased-legends-susan-choice.trycloudflare.com/auth/callback",
+  "https://decreased-legends-susan-choice.trycloudflare.com/auth/shopify/callback",
+  "https://decreased-legends-susan-choice.trycloudflare.com/api/auth/callback"
+]
+
+[webhooks]
+api_version = "2025-01"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+[pos]
+embedded = false
