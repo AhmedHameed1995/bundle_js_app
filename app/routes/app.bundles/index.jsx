@@ -168,11 +168,8 @@ export async function action({ request, params }) {
     try {
       await updateBundle(id, { name, description });
       // return redirect("/bundles");
-
-       // Fetch updated bundles
-       const bundles = await getBundles();
-      
-       return json(bundles);
+      // Fetch updated bundles
+      return { success: true };
        
     } catch (error) {
       console.error("Error updating bundle:", error);

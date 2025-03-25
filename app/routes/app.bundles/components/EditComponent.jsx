@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Form, useNavigation } from "@remix-run/react";
+import { useState, useEffect, useRef } from "react";
+import { Form, useNavigation, useActionData } from "@remix-run/react";
 import {
   TextField,
   FormLayout,
@@ -8,16 +8,22 @@ import {
   BlockStack,
   Text,
 } from "@shopify/polaris";
+import { useAppBridge } from "@shopify/app-bridge-react";
 
-// Edit Component - Form for editing records
-const EditComponent = ({ item, onBack, onSave }) => {
-  // Initialize form data with empty values, then update after mount
+const EditComponent = ({ item, onBack }) => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
   });
 
-  // Set form data after component mounts to avoid hydration mismatch
+  // Get the shopify object for toast notifications
+  const shopify = useAppBridge();
+
+  const navigation = useNavigation();
+  const actionData = useActionData();
+  const prevNavigationState = useRef(navigation.state);
+
+  // Set initial form data
   useEffect(() => {
     if (item) {
       setFormData({
@@ -27,18 +33,31 @@ const EditComponent = ({ item, onBack, onSave }) => {
     }
   }, [item]);
 
+  // Show toast on successful submission
+  useEffect(() => {
+    if (
+      prevNavigationState.current === "loading" &&
+      navigation.state === "idle" &&
+      actionData?.success
+    ) {
+      shopify.toast.show("Bundle updated successfully", { duration: 3000 });
+      setTimeout(() => onBack(), 1000); // Wait 3 seconds before switching
+    }
+    prevNavigationState.current = navigation.state;
+  }, [navigation.state, actionData, shopify]);
+
   const handleChange = (field) => (value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Track navigation state for form submission
-  const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
 
   return (
     <div>
       <BlockStack>
-        <Text variant="headingLg" as="h3">Edit Bundle</Text>
+        <Text variant="headingLg" as="h3">
+          Edit Bundle
+        </Text>
       </BlockStack>
       <br />
       <Form method="post">
@@ -48,21 +67,25 @@ const EditComponent = ({ item, onBack, onSave }) => {
           <TextField
             label="Name"
             value={formData.name}
-            onChange={handleChange('name')}
+            onChange={handleChange("name")}
             autoComplete="off"
             name="name"
           />
           <TextField
             label="Description"
             value={formData.description}
-            onChange={handleChange('description')}
+            onChange={handleChange("description")}
             multiline={4}
             autoComplete="off"
             name="description"
           />
           <ButtonGroup>
-            <Button submit primary loading={isSubmitting}>Save Changes</Button>
-            <Button onClick={onBack} disabled={isSubmitting}>Cancel</Button>
+            <Button submit primary loading={isSubmitting}>
+              Save Changes
+            </Button>
+            <Button onClick={onBack} disabled={isSubmitting}>
+              Cancel
+            </Button>
           </ButtonGroup>
         </FormLayout>
       </Form>
