@@ -38,7 +38,7 @@ export function useModalManager() {
         });
 
         if (products && products.length > 0) {
-          const { id, title, handle, variants, images } = products[0];
+          const { id, title, handle, variants, images, status } = products[0];
           const selectedProduct = {
             id,
             title,
@@ -46,6 +46,7 @@ export function useModalManager() {
             productVariantId: variants[0].id,
             productImage: images[0]?.originalSrc,
             productAlt: images[0]?.altText,
+            status
           };
 
           return { 

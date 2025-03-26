@@ -11,6 +11,8 @@ import {
   Layout,
   Card,
   Select,
+  Badge,
+  InlineStack,
 } from "@shopify/polaris";
 import { useAppBridge } from "@shopify/app-bridge-react";
 
@@ -65,102 +67,146 @@ const EditComponent = ({ item, onBack, isCreateNew, selectedProduct, selectedBun
   };
 
   const isSubmitting = navigation.state === "submitting";
-
+  console.log(selectedProduct);
   return (
-    <Page fullWidth>
-      <Layout>
-        {/* Display Product Type Before Product Details */}
-        <Layout.Section>
-          <Card sectioned>
-            <Text variant="headingMd" as="h2">
-              Product type: {selectedBundleType || "Not selected"}
-            </Text>
-          </Card>
-        </Layout.Section>
-
-        {/* Full Width Section for product details */}
-        <Layout.Section>
-          <Card title="Bundle details" sectioned>
-            {isCreateNew ? (
-              <FormLayout>
-                <TextField
-                  label="Title"
-                  value={formData.title}
-                  onChange={handleChange("title")}
-                  placeholder="E.g. Build your perfect bundle"
-                />
-                <TextField
-                  label="Discount"
-                  value={formData.discount}
-                  onChange={handleChange("discount")}
-                  type="number"
-                  suffix="%"
-                />
-                <Select
-                  label="Product status"
-                  options={["Draft", "Active"]}
-                  value={formData.status}
-                  onChange={handleChange("status")}
-                />
-              </FormLayout>
-            ) : selectedProduct ? (
-              <div>
-                <p><strong>Title:</strong> {selectedProduct.title}</p>
-                <p><strong>Handle:</strong> {selectedProduct.handle}</p>
-                <p><strong>Variant ID:</strong> {selectedProduct.productVariantId}</p>
-                {selectedProduct.productImage && (
-                  <img
-                    src={selectedProduct.productImage}
-                    alt={selectedProduct.productAlt || selectedProduct.title}
-                    style={{ maxWidth: "200px", maxHeight: "200px" }}
-                  />
-                )}
-              </div>
+    <>
+      <Page
+        backAction={{content: 'Products', onAction: onBack}}
+        title={selectedProduct ? selectedProduct.title : `Create a new ${selectedBundleType} bundle`}
+        titleMetadata={
+          <InlineStack spacing="base" alignment="center">
+            {selectedProduct ? (
+              <Badge tone={selectedProduct.status == "ACTIVE" ? "success" : "info"}>
+                {selectedProduct.status}
+              </Badge>
             ) : (
-              <p>
-                Use to follow a normal section with a secondary section to create
-                a 2/3 + 1/3 layout on detail pages (such as individual product or
-                order pages). Can also be used on any page that needs to structure
-                a lot of content. This layout stacks the columns on small screens.
-              </p>
+              <Badge tone="warning">Not selected</Badge>
             )}
-          </Card>
-        </Layout.Section>
-        <Layout.Section>
-          <Card title="Bundle Information" sectioned>
-            <Form method="post">
-              <input type="hidden" name="id" value={item?.id} />
-              <input type="hidden" name="_action" value="edit" />
-              <FormLayout>
-                <TextField
-                  label="Name"
-                  value={formData.name}
-                  onChange={handleChange("name")}
-                  autoComplete="off"
-                  name="name"
-                />
-                <TextField
-                  label="Description"
-                  value={formData.description}
-                  onChange={handleChange("description")}
-                  multiline={4}
-                  autoComplete="off"
-                  name="description"
-                />
-                <ButtonGroup>
-                  <Button submit primary loading={isSubmitting}>
-                    Save Changes
-                  </Button>
-                  <Button onClick={onBack} disabled={isSubmitting}>
-                    Cancel
-                  </Button>
-                </ButtonGroup>
-              </FormLayout>
-            </Form>
-          </Card>
-        </Layout.Section>
-      </Layout>
-    </Page>
+            {selectedBundleType ? (
+              <Badge tone={selectedBundleType === "Simple" ? "success" : "info"}>
+                {selectedBundleType}
+              </Badge>
+            ) : (
+              <Badge tone="warning">Not selected</Badge>
+            )}
+          </InlineStack>
+        }
+        subtitle="Perfect for any pet"
+        compactTitle
+        primaryAction={{content: 'Save', disabled: true}}
+        secondaryActions={[
+          {
+            content: 'Duplicate',
+            accessibilityLabel: 'Secondary action label',
+            onAction: () => alert('Duplicate action'),
+          },
+          {
+            content: 'View on your store',
+            onAction: () => alert('View on your store action'),
+          },
+        ]}
+        actionGroups={[
+          {
+            title: 'Promote',
+            actions: [
+              {
+                content: 'Share on Facebook',
+                accessibilityLabel: 'Individual action label',
+                onAction: () => alert('Share on Facebook action'),
+              },
+            ],
+          },
+        ]}
+        pagination={{
+          hasPrevious: true,
+          hasNext: true,
+        }}
+      >
+        <Layout>
+          {/* Full Width Section for product details */}
+          <Layout.Section>
+            <Card title="Bundle details" sectioned>
+              {isCreateNew ? (
+                <FormLayout>
+                  <TextField
+                    label="Title"
+                    value={formData.title}
+                    onChange={handleChange("title")}
+                    placeholder="E.g. Build your perfect bundle"
+                  />
+                  <TextField
+                    label="Discount"
+                    value={formData.discount}
+                    onChange={handleChange("discount")}
+                    type="number"
+                    suffix="%"
+                  />
+                  <Select
+                    label="Product status"
+                    options={["Draft", "Active"]}
+                    value={formData.status}
+                    onChange={handleChange("status")}
+                  />
+                </FormLayout>
+              ) : selectedProduct ? (
+                <div>
+                  <p><strong>Title:</strong> {selectedProduct.title}</p>
+                  <p><strong>Handle:</strong> {selectedProduct.handle}</p>
+                  <p><strong>Variant ID:</strong> {selectedProduct.productVariantId}</p>
+                  {selectedProduct.productImage && (
+                    <img
+                      src={selectedProduct.productImage}
+                      alt={selectedProduct.productAlt || selectedProduct.title}
+                      style={{ maxWidth: "200px", maxHeight: "200px" }}
+                    />
+                  )}
+                </div>
+              ) : (
+                <p>
+                  Use to follow a normal section with a secondary section to create
+                  a 2/3 + 1/3 layout on detail pages (such as individual product or
+                  order pages). Can also be used on any page that needs to structure
+                  a lot of content. This layout stacks the columns on small screens.
+                </p>
+              )}
+            </Card>
+          </Layout.Section>
+          <Layout.Section variant="oneThird">
+            <Card title="Bundle Information" sectioned>
+              <Form method="post">
+                <input type="hidden" name="id" value={item?.id} />
+                <input type="hidden" name="_action" value="edit" />
+                <FormLayout>
+                  <TextField
+                    label="Name"
+                    value={formData.name}
+                    onChange={handleChange("name")}
+                    autoComplete="off"
+                    name="name"
+                  />
+                  <TextField
+                    label="Description"
+                    value={formData.description}
+                    onChange={handleChange("description")}
+                    multiline={4}
+                    autoComplete="off"
+                    name="description"
+                  />
+                  <ButtonGroup>
+                    <Button submit primary loading={isSubmitting}>
+                      Save Changes
+                    </Button>
+                    <Button onClick={onBack} disabled={isSubmitting}>
+                      Cancel
+                    </Button>
+                  </ButtonGroup>
+                </FormLayout>
+              </Form>
+            </Card>
+          </Layout.Section>
+        </Layout>
+      </Page>
+    </>
   );
 };
 

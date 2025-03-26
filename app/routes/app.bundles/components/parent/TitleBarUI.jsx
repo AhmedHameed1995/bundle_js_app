@@ -4,12 +4,9 @@ function TitleBarUI({
   title,
   badgeText,
   onPrimaryAction,
-  onSecondaryAction,
   primaryActionContent = "Primary Action",
-  secondaryActionContent = "Secondary Action",
   showBackButton = false,
   onBack,
-  children,
 }) {
   return (
     <>
@@ -19,7 +16,7 @@ function TitleBarUI({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          padding: "1rem",
+          padding: "1rem 0",
         }}
       >
         <div style={{ display: "flex", alignItems: "center" }}>
@@ -43,15 +40,11 @@ function TitleBarUI({
 
         {/* Action Buttons */}
         <ButtonGroup>
-          <Button onClick={onSecondaryAction}>{secondaryActionContent}</Button>
           <Button variant="primary" onClick={onPrimaryAction}>
             {primaryActionContent}
           </Button>
         </ButtonGroup>
       </div>
-
-      {/* Additional Content */}
-      <div style={{ padding: "1rem" }}>{children}</div>
     </>
   );
 }

@@ -138,28 +138,30 @@ export default function BundlesPage() {
       case COMPONENT_STATES.INDEX:
       default:
         return (
-          <IndexComponent 
-            data={bundles} 
-            onView={(item) => changeComponent(COMPONENT_STATES.VIEW, item)}
-            onEdit={(item) => changeComponent(COMPONENT_STATES.EDIT, item)}
-            onDelete={(item) => changeComponent(COMPONENT_STATES.DELETE, item)}
-          />
+          <>
+            <TitleBarUI
+                title="Bundles"
+                badgeText="Draft"
+                onPrimaryAction={openTypeModal}
+                onSecondaryAction={() => alert("Secondary Action")}
+                primaryActionContent="Build Bundle"
+                secondaryActionContent="Secondary Action"
+                showBackButton={false}
+            />
+            <IndexComponent 
+              data={bundles} 
+              onView={(item) => changeComponent(COMPONENT_STATES.VIEW, item)}
+              onEdit={(item) => changeComponent(COMPONENT_STATES.EDIT, item)}
+              onDelete={(item) => changeComponent(COMPONENT_STATES.DELETE, item)}
+            />          
+          </>
         );
     }
   };
 
   return (
     <>
-      <TitleBarUI
-        title="Bundles"
-        badgeText="Draft"
-        onPrimaryAction={openTypeModal}
-        onSecondaryAction={() => alert("Secondary Action")}
-        primaryActionContent="Build Bundle"
-        secondaryActionContent="Secondary Action"
-        showBackButton={activeComponent !== COMPONENT_STATES.INDEX}
-        onBack={() => changeComponent(COMPONENT_STATES.INDEX)}
-      >
+      <div style={{ padding: "0 1rem" }}>
         {renderActiveComponent()}
 
         {/* First Modal: Choose Bundle Type */}
@@ -209,7 +211,7 @@ export default function BundlesPage() {
             </ButtonGroup>
           </Modal.Section>
         </Modal>
-      </TitleBarUI>
+      </div>
     </>
   );
 }

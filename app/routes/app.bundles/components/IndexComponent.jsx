@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, DataTable, ButtonGroup, Text } from "@shopify/polaris";
+import { Button, DataTable, ButtonGroup } from "@shopify/polaris";
 
 const IndexComponent = ({ data, onEdit, onView, onDelete }) => {
   const rows = data.map((item) => [
