@@ -1,7 +1,5 @@
-// app/routes/app.bundles/index.jsx
-
 import { json, redirect } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useNavigate } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import IndexComponent from "./components/IndexComponent";
 import ViewComponent from "./components/ViewComponent";
@@ -12,10 +10,11 @@ import { getBundles, updateBundle } from "./services/bundleServices";
 import { authenticate } from "../../shopify.server";
 import { ModalUI } from "./components/parent/Modal";
 import TitleBarUI from "./components/parent/TitleBarUI";
+import { Modal, Button, ButtonGroup } from "@shopify/polaris";
 
 export default function BundlesPage() {
-  // Ensure loaderData is defined and defaults to empty arrays
   const { bundles = [], products = [] } = useLoaderData() || {};
+  const navigate = useNavigate();
   
   const [activeComponent, setActiveComponent] = useState("index");
   const [selectedItem, setSelectedItem] = useState(null);
@@ -23,18 +22,62 @@ export default function BundlesPage() {
   const [isClient, setIsClient] = useState(false);
   
   // Modal states
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTypeModalOpen, setIsTypeModalOpen] = useState(false);
   const [isSecondModalOpen, setIsSecondModalOpen] = useState(false);
-  const [isThirdModalOpen, setIsThirdModalOpen] = useState(false);
-  
-  const [selectedType, setSelectedType] = useState("");
+  const [selectedBundleType, setSelectedBundleType] = useState("");
+  const [isCreateNew, setIsCreateNew] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // Remove client-side fetchProducts method as we'll use server-side loading
+  // Function to open the first modal for bundle type selection
+  const handleBuildBundle = () => {
+    setIsTypeModalOpen(true);
+  };
+
+  // Function to handle bundle type selection and open the second modal
+  const handleTypeSelection = (type) => {
+    setSelectedBundleType(type);
+    setIsTypeModalOpen(false);
+    setIsSecondModalOpen(true);
+  };
+
+  // Function to handle selection in the second modal
+  const handleSecondModalSelection = async (option) => {
+    setIsSecondModalOpen(false);
+    if (option === "create") {
+      setIsCreateNew(true);
+      setSelectedItem(null);
+      setSelectedProduct(null);
+      changeComponent("edit");
+    } else if (option === "select") {
+      try {
+        const products = await window.shopify.resourcePicker({
+          type: "product",
+          action: "select",
+          multiple: false,
+        });
+        if (products && products.length > 0) {
+          const { id, title, handle, variants, images } = products[0];
+          setSelectedProduct({
+            id,
+            title,
+            handle,
+            productVariantId: variants[0].id,
+            productImage: images[0]?.originalSrc,
+            productAlt: images[0]?.altText,
+          });
+          setIsCreateNew(false);
+          setSelectedItem(products[0]);
+          changeComponent("edit");
+        }
+      } catch (error) {
+        console.error("Error selecting product:", error);
+      }
+    }
+  };
 
   // Change active component with a simulated delay
   const changeComponent = (component, item = null) => {
@@ -60,30 +103,7 @@ export default function BundlesPage() {
     changeComponent("index");
   };
 
-  // Open the first modal for bundle type selection
-  const handlePrimaryAction = () => {
-    setIsModalOpen(true);
-  };
-
-  // First modal: when a type is chosen, store it and open the second modal
-  const handleSelection = (type) => {
-    setSelectedType(type);
-    setIsModalOpen(false);
-    setIsSecondModalOpen(true);
-  };
-
-  // Open the third modal for product selection and close the second modal
-  const openProductModal = () => {
-    setIsThirdModalOpen(true);
-    setIsSecondModalOpen(false);
-  };
-
-  // Handle product selection from the third modal
-  const handleProductSelect = (product) => {
-    setSelectedProduct(product);
-    setIsThirdModalOpen(false);
-  };
-
+  // Render active component function
   const renderActiveComponent = () => {
     if (!isClient) {
       return (
@@ -110,6 +130,9 @@ export default function BundlesPage() {
             item={selectedItem} 
             onBack={() => changeComponent("index")} 
             onSave={handleSave}
+            isCreateNew={isCreateNew}
+            selectedProduct={selectedProduct}
+            selectedBundleType={selectedBundleType}
           />
         );
       case "delete":
@@ -138,9 +161,9 @@ export default function BundlesPage() {
       <TitleBarUI
         title="Bundles"
         badgeText="Draft"
-        onPrimaryAction={handlePrimaryAction}
+        onPrimaryAction={handleBuildBundle}
         onSecondaryAction={() => alert("Secondary Action")}
-        primaryActionContent="Primary Action"
+        primaryActionContent="Build Bundle"
         secondaryActionContent="Secondary Action"
         showBackButton={activeComponent !== "index"}
         onBack={() => changeComponent("index")}
@@ -151,69 +174,53 @@ export default function BundlesPage() {
         <ModalUI
           title="Choose Bundle Type"
           primaryActionContent="Close"
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          isOpen={isTypeModalOpen}
+          onClose={() => setIsTypeModalOpen(false)}
         >
           <p>Select a bundle type:</p>
           <div style={{ display: "flex", gap: "1rem" }}>
-            <button onClick={() => handleSelection("simple")}>Simple</button>
-            <button onClick={() => handleSelection("infinite")}>Infinite</button>
+            <button onClick={() => handleTypeSelection("Simple")}>Simple</button>
+            <button onClick={() => handleTypeSelection("Infinite")}>Infinite</button>
           </div>
         </ModalUI>
 
-        {/* Second Modal: Based on Selection */}
-        <ModalUI
-          title={`You selected: ${selectedType}`}
-          primaryActionContent="Close"
-          isOpen={isSecondModalOpen}
+        {/* Second Modal: Choose to create new or select existing */}
+        <Modal
+          open={isSecondModalOpen}
           onClose={() => setIsSecondModalOpen(false)}
+          title="Create simple bundle"
         >
-          <p>
-            Now you can configure your <strong>{selectedType}</strong> bundle.
-          </p>
-          <button onClick={openProductModal}>Select Product</button>
-        </ModalUI>
-
-        {/* Third Modal: Product Selection */}
-        <ModalUI
-          title="Select Product"
-          primaryActionContent="Close"
-          isOpen={isThirdModalOpen}
-          onClose={() => setIsThirdModalOpen(false)}
-        >
-          <p>Select a product from the list:</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {Array.isArray(products) && products.length > 0 ? (
-              products.map((product) => (
-                <button key={product.id} onClick={() => handleProductSelect(product)}>
-                  {product.title}
-                </button>
-              ))
-            ) : (
-              <p>No products available</p>
-            )}
-          </div>
-        </ModalUI>
-
-        {selectedProduct && (
-          <p>
-            Selected Product: <strong>{selectedProduct.title}</strong>
-          </p>
-        )}
+          <Modal.Section>
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <Button onClick={() => handleSecondModalSelection("create")}>
+                Create new bundle product
+              </Button>
+              <p>A new product will be created and used as your bundle.</p>
+              <Button onClick={() => handleSecondModalSelection("select")}>
+                Select existing bundle product
+              </Button>
+              <p>An existing product will be used as your bundle.</p>
+            </div>
+          </Modal.Section>
+          <Modal.Section>
+            <ButtonGroup>
+              <Button onClick={() => setIsSecondModalOpen(false)}>Cancel</Button>
+              <Button url="#">Learn more</Button>
+            </ButtonGroup>
+          </Modal.Section>
+        </Modal>
       </TitleBarUI>
     </>
   );
 }
 
-// Server-side loader function
+// Loader and action functions remain the same as in your original code
 export async function loader({ request }) {
   try {
     const { admin } = await authenticate.admin(request);
     
-    // Ensure getBundles returns an array; default to empty array if undefined
     const bundles = (await getBundles()) || [];
     
-    // Comprehensive GraphQL query to fetch products
     const query = `#graphql
       query {
         products(first: 250) {
@@ -247,7 +254,6 @@ export async function loader({ request }) {
     const response = await admin.graphql(query);
     const responseJson = await response.json();
     
-    // Process products with additional details
     const products = responseJson.data?.products?.edges
       ? responseJson.data.products.edges.map((edge) => ({
           id: edge.node.id,
@@ -265,7 +271,6 @@ export async function loader({ request }) {
   }
 }
 
-// Server-side action function remains the same
 export async function action({ request }) {
   const { session } = await authenticate.admin(request);
   const formData = await request.formData();

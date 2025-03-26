@@ -17,12 +17,6 @@ export function ModalUI({
         content: primaryActionContent || "Primary Action",
         onAction: onClose,
       }}
-      secondaryActions={[
-        {
-          content: secondaryActionContent || "Secondary Action",
-          onAction: onClose,
-        },
-      ]}
     >
       <Modal.Section>
         <BlockStack>{children}</BlockStack>

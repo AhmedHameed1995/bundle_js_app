@@ -9,34 +9,45 @@ import {
   Text,
   Page,
   Layout,
-  Card
+  Card,
+  Select,
 } from "@shopify/polaris";
 import { useAppBridge } from "@shopify/app-bridge-react";
 
-const EditComponent = ({ item, onBack }) => {
+const EditComponent = ({ item, onBack, isCreateNew, selectedProduct, selectedBundleType }) => {
   const [formData, setFormData] = useState({
+    title: "",
+    discount: "0",
+    status: "Draft",
     name: "",
     description: "",
   });
 
-  // Get the shopify object for toast notifications
   const shopify = useAppBridge();
-
   const navigation = useNavigation();
   const actionData = useActionData();
   const prevNavigationState = useRef(navigation.state);
 
-  // Set initial form data
   useEffect(() => {
-    if (item) {
+    if (isCreateNew) {
+      setFormData({
+        title: "",
+        discount: "0",
+        status: "Draft",
+        name: "",
+        description: "",
+      });
+    } else if (item) {
       setFormData({
         name: item.name || "",
         description: item.description || "",
+        title: selectedProduct?.title || "",
+        discount: "0",
+        status: "Draft",
       });
     }
-  }, [item]);
+  }, [item, isCreateNew, selectedProduct]);
 
-  // Show toast on successful submission
   useEffect(() => {
     if (
       prevNavigationState.current === "loading" &&
@@ -44,10 +55,10 @@ const EditComponent = ({ item, onBack }) => {
       actionData?.success
     ) {
       shopify.toast.show("Bundle updated successfully", { duration: 3000 });
-      setTimeout(() => onBack(), 1000); // Wait 3 seconds before switching
+      setTimeout(() => onBack(), 1000);
     }
     prevNavigationState.current = navigation.state;
-  }, [navigation.state, actionData, shopify]);
+  }, [navigation.state, actionData, shopify, onBack]);
 
   const handleChange = (field) => (value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -56,56 +67,100 @@ const EditComponent = ({ item, onBack }) => {
   const isSubmitting = navigation.state === "submitting";
 
   return (
-    <div>
-      <Page fullWidth>
-        <Layout>
-          <Layout.Section variant="oneThird">
-            <Card title="Order details" sectioned>
+    <Page fullWidth>
+      <Layout>
+        {/* Display Product Type Before Product Details */}
+        <Layout.Section>
+          <Card sectioned>
+            <Text variant="headingMd" as="h2">
+              Product type: {selectedBundleType || "Not selected"}
+            </Text>
+          </Card>
+        </Layout.Section>
+
+        {/* Full Width Section for product details */}
+        <Layout.Section>
+          <Card title="Bundle details" sectioned>
+            {isCreateNew ? (
+              <FormLayout>
+                <TextField
+                  label="Title"
+                  value={formData.title}
+                  onChange={handleChange("title")}
+                  placeholder="E.g. Build your perfect bundle"
+                />
+                <TextField
+                  label="Discount"
+                  value={formData.discount}
+                  onChange={handleChange("discount")}
+                  type="number"
+                  suffix="%"
+                />
+                <Select
+                  label="Product status"
+                  options={["Draft", "Active"]}
+                  value={formData.status}
+                  onChange={handleChange("status")}
+                />
+              </FormLayout>
+            ) : selectedProduct ? (
+              <div>
+                <p><strong>Title:</strong> {selectedProduct.title}</p>
+                <p><strong>Handle:</strong> {selectedProduct.handle}</p>
+                <p><strong>Variant ID:</strong> {selectedProduct.productVariantId}</p>
+                {selectedProduct.productImage && (
+                  <img
+                    src={selectedProduct.productImage}
+                    alt={selectedProduct.productAlt || selectedProduct.title}
+                    style={{ maxWidth: "200px", maxHeight: "200px" }}
+                  />
+                )}
+              </div>
+            ) : (
               <p>
                 Use to follow a normal section with a secondary section to create
                 a 2/3 + 1/3 layout on detail pages (such as individual product or
                 order pages). Can also be used on any page that needs to structure
                 a lot of content. This layout stacks the columns on small screens.
               </p>
-            </Card>
-          </Layout.Section>
-          <Layout.Section>
-            <Card title="Tags" sectioned>
-              <Form method="post">
-                <input type="hidden" name="id" value={item?.id} />
-                <input type="hidden" name="_action" value="edit" />
-                <FormLayout>
-                  <TextField
-                    label="Name"
-                    value={formData.name}
-                    onChange={handleChange("name")}
-                    autoComplete="off"
-                    name="name"
-                  />
-                  <TextField
-                    label="Description"
-                    value={formData.description}
-                    onChange={handleChange("description")}
-                    multiline={4}
-                    autoComplete="off"
-                    name="description"
-                  />
-                  <ButtonGroup>
-                    <Button submit primary loading={isSubmitting}>
-                      Save Changes
-                    </Button>
-                    <Button onClick={onBack} disabled={isSubmitting}>
-                      Cancel
-                    </Button>
-                  </ButtonGroup>
-                </FormLayout>
-              </Form>
-            </Card>
-          </Layout.Section>
-        </Layout>
-      </Page>
-      
-    </div>
+            )}
+          </Card>
+        </Layout.Section>
+        <Layout.Section>
+          <Card title="Bundle Information" sectioned>
+            <Form method="post">
+              <input type="hidden" name="id" value={item?.id} />
+              <input type="hidden" name="_action" value="edit" />
+              <FormLayout>
+                <TextField
+                  label="Name"
+                  value={formData.name}
+                  onChange={handleChange("name")}
+                  autoComplete="off"
+                  name="name"
+                />
+                <TextField
+                  label="Description"
+                  value={formData.description}
+                  onChange={handleChange("description")}
+                  multiline={4}
+                  autoComplete="off"
+                  name="description"
+                />
+                <ButtonGroup>
+                  <Button submit primary loading={isSubmitting}>
+                    Save Changes
+                  </Button>
+                  <Button onClick={onBack} disabled={isSubmitting}>
+                    Cancel
+                  </Button>
+                </ButtonGroup>
+              </FormLayout>
+            </Form>
+          </Card>
+        </Layout.Section>
+      </Layout>
+    </Page>
   );
 };
 

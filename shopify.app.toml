@@ -3,7 +3,7 @@
 client_id = "d1b102200bb58a6337d07928a65a210d"
 name = "bundle_with_javascript"
 handle = "bundle_with_javascript"
-application_url = "https://retrieval-input-seen-means.trycloudflare.com"
+application_url = "https://quad-expand-cdt-urls.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "read_products,write_products"
 
 [auth]
 redirect_urls = [
-  "https://retrieval-input-seen-means.trycloudflare.com/auth/callback",
-  "https://retrieval-input-seen-means.trycloudflare.com/auth/shopify/callback",
-  "https://retrieval-input-seen-means.trycloudflare.com/api/auth/callback"
+  "https://quad-expand-cdt-urls.trycloudflare.com/auth/callback",
+  "https://quad-expand-cdt-urls.trycloudflare.com/auth/shopify/callback",
+  "https://quad-expand-cdt-urls.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]
