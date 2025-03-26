@@ -7,6 +7,9 @@ import {
   Button,
   BlockStack,
   Text,
+  Page,
+  Layout,
+  Card
 } from "@shopify/polaris";
 import { useAppBridge } from "@shopify/app-bridge-react";
 
@@ -54,41 +57,54 @@ const EditComponent = ({ item, onBack }) => {
 
   return (
     <div>
-      <BlockStack>
-        <Text variant="headingLg" as="h3">
-          Edit Bundle
-        </Text>
-      </BlockStack>
-      <br />
-      <Form method="post">
-        <input type="hidden" name="id" value={item?.id} />
-        <input type="hidden" name="_action" value="edit" />
-        <FormLayout>
-          <TextField
-            label="Name"
-            value={formData.name}
-            onChange={handleChange("name")}
-            autoComplete="off"
-            name="name"
-          />
-          <TextField
-            label="Description"
-            value={formData.description}
-            onChange={handleChange("description")}
-            multiline={4}
-            autoComplete="off"
-            name="description"
-          />
-          <ButtonGroup>
-            <Button submit primary loading={isSubmitting}>
-              Save Changes
-            </Button>
-            <Button onClick={onBack} disabled={isSubmitting}>
-              Cancel
-            </Button>
-          </ButtonGroup>
-        </FormLayout>
-      </Form>
+      <Page fullWidth>
+        <Layout>
+          <Layout.Section variant="oneThird">
+            <Card title="Order details" sectioned>
+              <p>
+                Use to follow a normal section with a secondary section to create
+                a 2/3 + 1/3 layout on detail pages (such as individual product or
+                order pages). Can also be used on any page that needs to structure
+                a lot of content. This layout stacks the columns on small screens.
+              </p>
+            </Card>
+          </Layout.Section>
+          <Layout.Section>
+            <Card title="Tags" sectioned>
+              <Form method="post">
+                <input type="hidden" name="id" value={item?.id} />
+                <input type="hidden" name="_action" value="edit" />
+                <FormLayout>
+                  <TextField
+                    label="Name"
+                    value={formData.name}
+                    onChange={handleChange("name")}
+                    autoComplete="off"
+                    name="name"
+                  />
+                  <TextField
+                    label="Description"
+                    value={formData.description}
+                    onChange={handleChange("description")}
+                    multiline={4}
+                    autoComplete="off"
+                    name="description"
+                  />
+                  <ButtonGroup>
+                    <Button submit primary loading={isSubmitting}>
+                      Save Changes
+                    </Button>
+                    <Button onClick={onBack} disabled={isSubmitting}>
+                      Cancel
+                    </Button>
+                  </ButtonGroup>
+                </FormLayout>
+              </Form>
+            </Card>
+          </Layout.Section>
+        </Layout>
+      </Page>
+      
     </div>
   );
 };

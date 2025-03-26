@@ -16,7 +16,6 @@ const IndexComponent = ({ data, onEdit, onView, onDelete }) => {
 
   return (
     <div>
-      <Text variant="headingLg" as="h3">All Bundles</Text>
       <DataTable
         columnContentTypes={["text", "text", "text", "text", "text"]}
         headings={["ID", "Name", "Description", "Created At", "Actions"]}
