@@ -1,4 +1,4 @@
-import { json, redirect } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import { useLoaderData, useNavigate } from "@remix-run/react";
 import { useState, useEffect } from "react";
 import IndexComponent from "./components/IndexComponent";
@@ -264,10 +264,10 @@ export async function loader({ request }) {
         }))
       : [];
     
-    return json({ bundles, products });
+    return Response.json({ bundles, products });
   } catch (error) {
     console.error("Error fetching data", error);
-    return json({ bundles: [], products: [] }, { status: 500 });
+    return Response.json({ bundles: [], products: [] }, { status: 500 });
   }
 }
 
@@ -282,7 +282,7 @@ export async function action({ request }) {
     const description = formData.get("description");
 
     if (!id || !name || !description) {
-      return json({ error: "Missing required fields" }, { status: 400 });
+      return Response.json({ error: "Missing required fields" }, { status: 400 });
     }
 
     try {
@@ -290,7 +290,7 @@ export async function action({ request }) {
       return { success: true };
     } catch (error) {
       console.error("Error updating bundle:", error);
-      return json({ error: "Failed to update bundle" }, { status: 500 });
+      return Response.json({ error: "Failed to update bundle" }, { status: 500 });
     }
   }
   
