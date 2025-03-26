@@ -13,10 +13,11 @@ import {
   Select,
   Badge,
   InlineStack,
+  CalloutCard,
 } from "@shopify/polaris";
 import { useAppBridge } from "@shopify/app-bridge-react";
 
-const EditComponent = ({ item, onBack, isCreateNew, selectedProduct, selectedBundleType }) => {
+const EditComponent = ({ item, onBack, isCreateNew, selectedProduct, selectedBundleType, shopDomain }) => {
   const [formData, setFormData] = useState({
     title: "",
     discount: "0",
@@ -67,7 +68,10 @@ const EditComponent = ({ item, onBack, isCreateNew, selectedProduct, selectedBun
   };
 
   const isSubmitting = navigation.state === "submitting";
-  console.log(selectedProduct);
+  
+  // Fallback if shopDomain isn't available
+  const productHandle = "mentos-ment-chewy-strawberry-1-32-oz-box-of-15-rolls";
+  const productUrl = `https://${shopDomain}/products/${selectedProduct  ? selectedProduct.handle : ''}`;
   return (
     <>
       <Page
@@ -102,7 +106,7 @@ const EditComponent = ({ item, onBack, isCreateNew, selectedProduct, selectedBun
           },
           {
             content: 'View on your store',
-            onAction: () => alert('View on your store action'),
+            onAction: () => window.open(productUrl, "_blank"), 
           },
         ]}
         actionGroups={[
@@ -124,7 +128,17 @@ const EditComponent = ({ item, onBack, isCreateNew, selectedProduct, selectedBun
       >
         <Layout>
           {/* Full Width Section for product details */}
-          <Layout.Section>
+          <Layout.Section variant="oneThird">
+          <BlockStack gap="500">
+            <CalloutCard
+              title="Customize the style of your checkout"
+              illustration="https://cdn.shopify.com/s/assets/admin/checkout/settings-customizecart-705f57c725ac05be5a34ec20c05b94298cb8afd10aac7bd9c7ad02030f48cfa0.svg"
+              primaryAction={{content: 'Customize checkout'}}
+              secondaryAction={{content: 'Learn more about customizing checkout'}}
+              
+            >
+              <p>Upload your store’s logo, change colors and fonts, and more.</p>
+            </CalloutCard>
             <Card title="Bundle details" sectioned>
               {isCreateNew ? (
                 <FormLayout>
@@ -160,6 +174,7 @@ const EditComponent = ({ item, onBack, isCreateNew, selectedProduct, selectedBun
                       style={{ maxWidth: "200px", maxHeight: "200px" }}
                     />
                   )}
+                  
                 </div>
               ) : (
                 <p>
@@ -170,8 +185,9 @@ const EditComponent = ({ item, onBack, isCreateNew, selectedProduct, selectedBun
                 </p>
               )}
             </Card>
+          </BlockStack>
           </Layout.Section>
-          <Layout.Section variant="oneThird">
+          <Layout.Section>
             <Card title="Bundle Information" sectioned>
               <Form method="post">
                 <input type="hidden" name="id" value={item?.id} />

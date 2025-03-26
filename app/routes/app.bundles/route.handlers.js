@@ -5,7 +5,7 @@ import { getBundles, updateBundle } from "./services/bundleServices";
 
 export async function bundlesLoader({ request }) {
   try {
-    const { admin } = await authenticate.admin(request);
+    const { admin, session } = await authenticate.admin(request);
     
     const bundles = (await getBundles()) || [];
     
@@ -52,10 +52,12 @@ export async function bundlesLoader({ request }) {
         }))
       : [];
     
-    return Response.json({ bundles, products });
+    // Include the shop domain in the loader data
+    const shopDomain = session.shop;
+    return Response.json({ bundles, products, shopDomain });
   } catch (error) {
     console.error("Error fetching data", error);
-    return Response.json({ bundles: [], products: [] }, { status: 500 });
+    return Response.json({ bundles: [], products: [], shopDomain: null }, { status: 500 });
   }
 }
 

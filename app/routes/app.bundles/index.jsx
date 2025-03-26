@@ -22,7 +22,7 @@ import TitleBarUI from "./components/parent/TitleBarUI";
 export { bundlesLoader as loader, bundlesAction as action };
 
 export default function BundlesPage() {
-  const { bundles = [], products = [] } = useLoaderData() || {};
+  const { bundles = [], products = [], shopDomain } = useLoaderData() || {};
   const navigate = useNavigate();
   
   const [activeComponent, setActiveComponent] = useState(COMPONENT_STATES.INDEX);
@@ -125,6 +125,7 @@ export default function BundlesPage() {
             isCreateNew={isCreateNew}
             selectedProduct={selectedProduct}
             selectedBundleType={selectedBundleType}
+            shopDomain={shopDomain} 
           />
         );
       case COMPONENT_STATES.DELETE:
