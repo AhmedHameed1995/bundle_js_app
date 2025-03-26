@@ -3,7 +3,7 @@
 client_id = "d1b102200bb58a6337d07928a65a210d"
 name = "bundle_with_javascript"
 handle = "bundle_with_javascript"
-application_url = "https://revenues-through-strict-promise.trycloudflare.com"
+application_url = "https://retrieval-input-seen-means.trycloudflare.com"
 embedded = true
 
 [build]
@@ -13,13 +13,13 @@ include_config_on_deploy = true
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products"
+scopes = "read_products,write_products"
 
 [auth]
 redirect_urls = [
-  "https://revenues-through-strict-promise.trycloudflare.com/auth/callback",
-  "https://revenues-through-strict-promise.trycloudflare.com/auth/shopify/callback",
-  "https://revenues-through-strict-promise.trycloudflare.com/api/auth/callback"
+  "https://retrieval-input-seen-means.trycloudflare.com/auth/callback",
+  "https://retrieval-input-seen-means.trycloudflare.com/auth/shopify/callback",
+  "https://retrieval-input-seen-means.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]

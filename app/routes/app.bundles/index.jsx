@@ -8,7 +8,7 @@ import ViewComponent from "./components/ViewComponent";
 import EditComponent from "./components/EditComponent";
 import DeleteComponent from "./components/DeleteComponent";
 import LoadingComponent from "./components/LoadingComponent";
-import { getBundles, updateBundle } from "./services/bundleServices"; // Ensure getBundles returns an array or defaults to []
+import { getBundles, updateBundle } from "./services/bundleServices";
 import { authenticate } from "../../shopify.server";
 import { ModalUI } from "./components/parent/Modal";
 import TitleBarUI from "./components/parent/TitleBarUI";
@@ -23,30 +23,19 @@ export default function BundlesPage() {
   const [isClient, setIsClient] = useState(false);
   
   // Modal states
-  const [isModalOpen, setIsModalOpen] = useState(false);       // First modal: choose bundle type
-  const [isSecondModalOpen, setIsSecondModalOpen] = useState(false); // Second modal: configuration
-  const [isThirdModalOpen, setIsThirdModalOpen] = useState(false);   // Third modal: product selection
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSecondModalOpen, setIsSecondModalOpen] = useState(false);
+  const [isThirdModalOpen, setIsThirdModalOpen] = useState(false);
   
-  const [selectedType, setSelectedType] = useState("");          // "simple" or "infinite"
-  const [selectedProduct, setSelectedProduct] = useState(null);    // Chosen product
+  const [selectedType, setSelectedType] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const fetchProducts = async () => {
-    try {
-      const response = await fetch('/api/products'); // Adjust the API endpoint as needed
-      if (!response.ok) {
-        throw new Error('Failed to fetch products');
-      }
-      const data = await response.json();
-      setProducts(data); // Assuming setProducts updates the state holding product data
-    } catch (error) {
-      console.error('Error fetching products:', error);
-    }
-  };
-  
+  // Remove client-side fetchProducts method as we'll use server-side loading
+
   // Change active component with a simulated delay
   const changeComponent = (component, item = null) => {
     setIsLoading(true);
@@ -85,7 +74,6 @@ export default function BundlesPage() {
 
   // Open the third modal for product selection and close the second modal
   const openProductModal = () => {
-    fetchProducts(); // Fetch products when opening the modal
     setIsThirdModalOpen(true);
     setIsSecondModalOpen(false);
   };
@@ -221,26 +209,53 @@ export default function BundlesPage() {
 export async function loader({ request }) {
   try {
     const { admin } = await authenticate.admin(request);
+    
     // Ensure getBundles returns an array; default to empty array if undefined
     const bundles = (await getBundles()) || [];
     
-    // GraphQL query to fetch products
+    // Comprehensive GraphQL query to fetch products
     const query = `#graphql
       query {
-        products(first: 10) {
+        products(first: 250) {
           edges {
             node {
               id
               title
               handle
+              productType
+              variants(first: 1) {
+                edges {
+                  node {
+                    price
+                    sku
+                  }
+                }
+              }
+              images(first: 1) {
+                edges {
+                  node {
+                    originalSrc
+                    altText
+                  }
+                }
+              }
             }
           }
         }
       }`;
       
     const response = await admin.graphql(query);
-    const products = response.data?.products?.edges
-      ? response.data.products.edges.map((edge) => edge.node)
+    const responseJson = await response.json();
+    
+    // Process products with additional details
+    const products = responseJson.data?.products?.edges
+      ? responseJson.data.products.edges.map((edge) => ({
+          id: edge.node.id,
+          title: edge.node.title,
+          handle: edge.node.handle,
+          price: edge.node.variants.edges[0]?.node.price,
+          image: edge.node.images.edges[0]?.node.originalSrc
+        }))
       : [];
     
     return json({ bundles, products });
@@ -250,7 +265,7 @@ export async function loader({ request }) {
   }
 }
 
-// Server-side action function
+// Server-side action function remains the same
 export async function action({ request }) {
   const { session } = await authenticate.admin(request);
   const formData = await request.formData();
