@@ -15,11 +15,12 @@ export async function getBundles() {
 }
 
 export async function createBundle(formData) {
-  const title = formData.get("name");
+  // Expects formData to be a FormData object
+  const name = formData.get("name");
   const description = formData.get("description");
   try {
     return await prisma.bundle.create({
-      data: { title, description },
+      data: { name, description },
     });
   } catch (error) {
     console.error("Error creating bundle:", error);

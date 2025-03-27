@@ -19,6 +19,7 @@ import { useAppBridge } from "@shopify/app-bridge-react";
 
 const EditComponent = ({ item, onBack, isCreateNew, selectedProduct, selectedBundleType, shopDomain }) => {
   const [formData, setFormData] = useState({
+    action: "create",
     title: "",
     discount: "0",
     status: "Draft",
@@ -34,6 +35,7 @@ const EditComponent = ({ item, onBack, isCreateNew, selectedProduct, selectedBun
   useEffect(() => {
     if (isCreateNew) {
       setFormData({
+        action: "create",
         title: "",
         discount: "0",
         status: "Draft",
@@ -42,6 +44,7 @@ const EditComponent = ({ item, onBack, isCreateNew, selectedProduct, selectedBun
       });
     } else if (item) {
       setFormData({
+        action: "edit",
         name: item.name || "",
         description: item.description || "",
         title: selectedProduct?.title || "",
@@ -57,7 +60,11 @@ const EditComponent = ({ item, onBack, isCreateNew, selectedProduct, selectedBun
       navigation.state === "idle" &&
       actionData?.success
     ) {
-      shopify.toast.show("Bundle updated successfully", { duration: 3000 });
+      const message =
+        actionData.action === "create"
+          ? "Bundle created successfully"
+          : "Bundle updated successfully";
+      shopify.toast.show(message, { duration: 3000 });
       setTimeout(() => onBack(), 1000);
     }
     prevNavigationState.current = navigation.state;
@@ -68,19 +75,20 @@ const EditComponent = ({ item, onBack, isCreateNew, selectedProduct, selectedBun
   };
 
   const isSubmitting = navigation.state === "submitting";
-  
-  // Fallback if shopDomain isn't available
-  const productHandle = "mentos-ment-chewy-strawberry-1-32-oz-box-of-15-rolls";
-  const productUrl = `https://${shopDomain}/products/${selectedProduct  ? selectedProduct.handle : ''}`;
+
+  // Construct the product URL
+  const productHandle = selectedProduct?.handle || "mentos-ment-chewy-strawberry-1-32-oz-box-of-15-rolls";
+  const productUrl = selectedProduct?.onlineStoreUrl || (shopDomain ? `https://${shopDomain}/products/${productHandle}` : "#");
+
   return (
     <>
       <Page
-        backAction={{content: 'Products', onAction: onBack}}
+        backAction={{ content: "Products", onAction: onBack }}
         title={selectedProduct ? selectedProduct.title : `Create a new ${selectedBundleType} bundle`}
         titleMetadata={
           <InlineStack spacing="base" alignment="center">
             {selectedProduct ? (
-              <Badge tone={selectedProduct.status == "ACTIVE" ? "success" : "info"}>
+              <Badge tone={selectedProduct.status === "ACTIVE" ? "success" : "info"}>
                 {selectedProduct.status}
               </Badge>
             ) : (
@@ -95,103 +103,109 @@ const EditComponent = ({ item, onBack, isCreateNew, selectedProduct, selectedBun
             )}
           </InlineStack>
         }
-        subtitle="Perfect for any pet"
         compactTitle
-        primaryAction={{content: 'Save', disabled: true}}
+        primaryAction={{ content: "Save", disabled: true }}
         secondaryActions={[
           {
-            content: 'Duplicate',
-            accessibilityLabel: 'Secondary action label',
-            onAction: () => alert('Duplicate action'),
+            content: "Duplicate",
+            accessibilityLabel: "Secondary action label",
+            onAction: () => alert("Duplicate action"),
           },
           {
-            content: 'View on your store',
-            onAction: () => window.open(productUrl, "_blank"), 
+            content: "View on your store",
+            onAction: () => window.open(productUrl, "_blank"),
+            disabled: !shopDomain,
           },
         ]}
         actionGroups={[
           {
-            title: 'Promote',
+            title: "Promote",
             actions: [
               {
-                content: 'Share on Facebook',
-                accessibilityLabel: 'Individual action label',
-                onAction: () => alert('Share on Facebook action'),
+                content: "Share on Facebook",
+                accessibilityLabel: "Individual action label",
+                onAction: () => alert("Share on Facebook action"),
               },
             ],
           },
         ]}
-        pagination={{
-          hasPrevious: true,
-          hasNext: true,
-        }}
       >
         <Layout>
           {/* Full Width Section for product details */}
           <Layout.Section variant="oneThird">
-          <BlockStack gap="500">
-            <CalloutCard
-              title="Customize the style of your checkout"
-              illustration="https://cdn.shopify.com/s/assets/admin/checkout/settings-customizecart-705f57c725ac05be5a34ec20c05b94298cb8afd10aac7bd9c7ad02030f48cfa0.svg"
-              primaryAction={{content: 'Customize checkout'}}
-              secondaryAction={{content: 'Learn more about customizing checkout'}}
-              
-            >
-              <p>Upload your store’s logo, change colors and fonts, and more.</p>
-            </CalloutCard>
-            <Card title="Bundle details" sectioned>
-              {isCreateNew ? (
-                <FormLayout>
-                  <TextField
-                    label="Title"
-                    value={formData.title}
-                    onChange={handleChange("title")}
-                    placeholder="E.g. Build your perfect bundle"
-                  />
-                  <TextField
-                    label="Discount"
-                    value={formData.discount}
-                    onChange={handleChange("discount")}
-                    type="number"
-                    suffix="%"
-                  />
-                  <Select
-                    label="Product status"
-                    options={["Draft", "Active"]}
-                    value={formData.status}
-                    onChange={handleChange("status")}
-                  />
-                </FormLayout>
-              ) : selectedProduct ? (
-                <div>
-                  <p><strong>Title:</strong> {selectedProduct.title}</p>
-                  <p><strong>Handle:</strong> {selectedProduct.handle}</p>
-                  <p><strong>Variant ID:</strong> {selectedProduct.productVariantId}</p>
-                  {selectedProduct.productImage && (
-                    <img
-                      src={selectedProduct.productImage}
-                      alt={selectedProduct.productAlt || selectedProduct.title}
-                      style={{ maxWidth: "200px", maxHeight: "200px" }}
-                    />
-                  )}
-                  
-                </div>
-              ) : (
-                <p>
-                  Use to follow a normal section with a secondary section to create
-                  a 2/3 + 1/3 layout on detail pages (such as individual product or
-                  order pages). Can also be used on any page that needs to structure
-                  a lot of content. This layout stacks the columns on small screens.
-                </p>
+            <BlockStack gap="500">
+              {selectedProduct && (
+                <CalloutCard
+                  title="Bundle product"
+                  illustration={selectedProduct.productImage || "https://via.placeholder.com/150"}
+                  primaryAction={{
+                    content: "View Product",
+                    url: productUrl,
+                    external: true,
+                  }}
+                >
+                  <BlockStack gap="200">
+                    <Text variant="bodyMd" as="p" fontWeight="medium">
+                      {selectedProduct.title || "Product Title"}
+                    </Text>
+                    <Text variant="bodySm" tone="subdued">
+                      {selectedProduct.variants?.length || 1} variant{selectedProduct.variants?.length !== 1 ? "s" : ""}
+                    </Text>
+                  </BlockStack>
+                </CalloutCard>
               )}
-            </Card>
-          </BlockStack>
+              <Card title="Bundle details" sectioned>
+                {isCreateNew ? (
+                  <FormLayout>
+                    <TextField
+                      label="Title"
+                      value={formData.title}
+                      onChange={handleChange("title")}
+                      placeholder="E.g. Build your perfect bundle"
+                    />
+                    <TextField
+                      label="Discount"
+                      value={formData.discount}
+                      onChange={handleChange("discount")}
+                      type="number"
+                      suffix="%"
+                    />
+                    <Select
+                      label="Product status"
+                      options={["Draft", "Active"]}
+                      value={formData.status}
+                      onChange={handleChange("status")}
+                    />
+                  </FormLayout>
+                ) : selectedProduct ? (
+                  <div>
+                    <p><strong>Title:</strong> {selectedProduct.title}</p>
+                    <p><strong>Handle:</strong> {selectedProduct.handle}</p>
+                    <p><strong>Variant ID:</strong> {selectedProduct.productVariantId}</p>
+                    {selectedProduct.productImage && (
+                      <img
+                        src={selectedProduct.productImage}
+                        alt={selectedProduct.productAlt || selectedProduct.title}
+                        style={{ maxWidth: "200px", maxHeight: "200px" }}
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <p>
+                    Use to follow a normal section with a secondary section to create
+                    a 2/3 + 1/3 layout on detail pages (such as individual product or
+                    order pages). Can also be used on any page that needs to structure
+                    a lot of content. This layout stacks the columns on small screens.
+                  </p>
+                )}
+              </Card>
+            </BlockStack>
           </Layout.Section>
           <Layout.Section>
             <Card title="Bundle Information" sectioned>
               <Form method="post">
                 <input type="hidden" name="id" value={item?.id} />
-                <input type="hidden" name="_action" value="edit" />
+                <input type="hidden" name="_action" value={formData.action} />
                 <FormLayout>
                   <TextField
                     label="Name"

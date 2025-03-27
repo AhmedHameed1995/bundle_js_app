@@ -3,7 +3,7 @@
 client_id = "d1b102200bb58a6337d07928a65a210d"
 name = "bundle_with_javascript"
 handle = "bundle_with_javascript"
-application_url = "https://dominant-jc-motors-ma.trycloudflare.com"
+application_url = "https://writings-shore-conf-started.trycloudflare.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "read_products,write_products"
 
 [auth]
 redirect_urls = [
-  "https://dominant-jc-motors-ma.trycloudflare.com/auth/callback",
-  "https://dominant-jc-motors-ma.trycloudflare.com/auth/shopify/callback",
-  "https://dominant-jc-motors-ma.trycloudflare.com/api/auth/callback"
+  "https://writings-shore-conf-started.trycloudflare.com/auth/callback",
+  "https://writings-shore-conf-started.trycloudflare.com/auth/shopify/callback",
+  "https://writings-shore-conf-started.trycloudflare.com/api/auth/callback"
 ]
 
 [webhooks]

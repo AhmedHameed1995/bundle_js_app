@@ -1,7 +1,6 @@
-// app/routes/app.bundles/route.handlers.js
 import { redirect } from "@remix-run/node";
 import { authenticate } from "../../shopify.server";
-import { getBundles, updateBundle } from "./services/bundleServices";
+import { createBundle, getBundles, updateBundle } from "./services/bundleServices";
 
 export async function bundlesLoader({ request }) {
   try {
@@ -77,10 +76,28 @@ export async function bundlesAction({ request }) {
 
     try {
       await updateBundle(id, { name, description });
-      return { success: true };
+      return { success: true, action: "edit" };
+      
     } catch (error) {
       console.error("Error updating bundle:", error);
       return Response.json({ error: "Failed to update bundle" }, { status: 500 });
+    }
+  }
+
+  if (actionType === "create") {
+    const name = formData.get("name");
+    const description = formData.get("description");
+
+    if (!name || !description) {
+      return Response.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    try {
+      await createBundle(formData);
+      return { success: true, action: "create" };
+    } catch (error) {
+      console.error("Error creating bundle:", error);
+      return Response.json({ error: "Failed to create bundle" }, { status: 500 });
     }
   }
   
