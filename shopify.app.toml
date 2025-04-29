@@ -1,9 +1,9 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "d1b102200bb58a6337d07928a65a210d"
-name = "bundle_with_javascript"
-handle = "bundle_with_javascript"
-application_url = "https://writings-shore-conf-started.trycloudflare.com"
+name = "bundle-with-javascript"
+handle = "bundle-with-javascript"
+application_url = "https://localhost:50976"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "read_products,write_products"
 
 [auth]
 redirect_urls = [
-  "https://writings-shore-conf-started.trycloudflare.com/auth/callback",
-  "https://writings-shore-conf-started.trycloudflare.com/auth/shopify/callback",
-  "https://writings-shore-conf-started.trycloudflare.com/api/auth/callback"
+  "https://localhost:50976/auth/callback",
+  "https://localhost:50976/auth/shopify/callback",
+  "https://localhost:50976/api/auth/callback"
 ]
 
 [webhooks]
