@@ -3,7 +3,7 @@
 client_id = "d1b102200bb58a6337d07928a65a210d"
 name = "bundle-with-javascript"
 handle = "bundle-with-javascript"
-application_url = "https://localhost:50976"
+application_url = "https://remix.itwebagency.com"
 embedded = true
 
 [build]
@@ -17,9 +17,9 @@ scopes = "read_products,write_products"
 
 [auth]
 redirect_urls = [
-  "https://localhost:50976/auth/callback",
-  "https://localhost:50976/auth/shopify/callback",
-  "https://localhost:50976/api/auth/callback"
+  "https://remix.itwebagency.com/auth/callback",
+  "https://remix.itwebagency.com/auth/shopify/callback",
+  "https://remix.itwebagency.com/api/auth/callback"
 ]
 
 [webhooks]
@@ -35,3 +35,8 @@ api_version = "2025-01"
 
 [pos]
 embedded = false
+
+[app_proxy]
+subpath = "bundles"
+prefix = "apps"
+url = "https://remix.itwebagency.com/api/bundles"

@@ -1,0 +1,20 @@
+<div id="bundles-list"></div>
+<script>
+  fetch('/apps/bundles')
+    .then(res => res.json())
+    .then(data => {
+      let html = '';
+      data.forEach(bundle => {
+        html += `<div><h3>${bundle.name}</h3><p>${bundle.description}</p></div>`;
+      });
+      document.getElementById('bundles-list').innerHTML = html;
+    });
+</script>
+
+{% schema %}
+{
+  "name": "Bundles Block",
+  "target": "section",
+  "settings": []
+}
+{% endschema %}

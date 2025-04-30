@@ -1,4 +1,7 @@
-# Shopify App Template - Remix
+# Shopify Remix App with Theme Extension, App Proxy, and Cloudflare Tunnel
+
+> **Note:** Replace all instances of `yourdomain.com` with your actual Cloudflare-managed domain or subdomain.
+
 
 This is a template for building a [Shopify app](https://shopify.dev/docs/apps/getting-started) using the [Remix](https://remix.run) framework.
 
@@ -6,7 +9,180 @@ Rather than cloning this repo, you can use your preferred package manager and th
 
 Visit the [`shopify.dev` documentation](https://shopify.dev/docs/api/shopify-app-remix) for more details on the Remix app package.
 
-## Quick start
+## Features
+
+- Built with **Remix**, **Prisma**, **SQLite**, and **Shopify Polaris**.
+- Includes a **theme app extension** (`bundles-block`) that fetches and displays bundles from your database on the storefront.
+- Uses **Shopify App Proxy** to securely expose backend data to the storefront.
+- Publicly accessible via **Cloudflare Tunnel** (no splash page, secure, and recommended for dev/prod).
+
+## Project Structure
+
+```
+bundle-with-javascript/
+├── app/                       # Remix app source code
+│   └── routes/
+│       └── api.bundles.jsx    # App proxy endpoint for bundles
+├── extensions/
+│   └── bundles-block/
+│       ├── blocks/
+│       │   └── bundles.liquid # Liquid block for storefront
+│       ├── assets/
+│       ├── locales/
+│       ├── snippets/
+│       └── shopify.extension.toml
+├── prisma/                    # Prisma schema and migrations
+├── shopify.app.toml           # Shopify app config (proxy, URLs, etc.)
+├── package.json
+└── ...
+```
+
+## Prerequisites
+
+- **Node.js** (v18+ recommended)
+- **Shopify Partner Account**
+- **Cloudflare Account** (with access to your domain)
+- **Test Shopify Store**
+- **Cloudflare Tunnel** ([cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/))
+
+## Setup Instructions
+
+### 1. Install Dependencies
+
+```sh
+npm install
+```
+
+### 2. Configure Environment
+
+- Copy `.env.example` to `.env` and fill in your Shopify API credentials and database URL.
+
+### 3. Database Setup
+
+```sh
+npx prisma migrate dev
+```
+
+### 4. Cloudflare Tunnel Setup
+
+- Authenticate with Cloudflare and create a tunnel:
+  ```sh
+  cloudflared login
+  cloudflared tunnel create my-shopify-tunnel
+  cloudflared tunnel route dns my-shopify-tunnel app.yourdomain.com
+  ```
+- Edit your Cloudflare tunnel config (e.g., `C:\Users\<user>\.cloudflared\config.yml`):
+  ```yaml
+  tunnel: <tunnel-uuid>
+  credentials-file: C:\Users\<user>\.cloudflared\<tunnel-uuid>.json
+  ingress:
+    - hostname: app.yourdomain.com
+      service: http://localhost:55405
+    - service: http_status:404
+  ```
+
+### 5. Start Your Remix App
+
+```sh
+set PORT=55405 && npm run dev
+```
+
+### 6. Run the Cloudflare Tunnel
+
+```sh
+cloudflared tunnel run my-shopify-tunnel
+```
+
+### 7. Configure Shopify App
+
+- In Shopify Partners Dashboard and in your `shopify.app.toml`, set:
+  - **App URL:** `https://app.yourdomain.com`
+  - **Redirect URLs:**
+    - `https://app.yourdomain.com/auth/callback`
+    - `https://app.yourdomain.com/auth/shopify/callback`
+    - `https://app.yourdomain.com/api/auth/callback`
+  - **App Proxy:**
+    - Subpath prefix: `apps`
+    - Subpath: `bundles`
+    - Proxy URL: `https://app.yourdomain.com/api/bundles`
+- In `shopify.app.toml`:
+  ```toml
+  [app_proxy]
+  subpath = "bundles"
+  prefix = "apps"
+  url = "https://app.yourdomain.com/api/bundles"
+  ```
+
+### 8. Deploy the Extension
+
+```sh
+shopify app deploy
+```
+
+## How It Works
+
+- **Storefront Block:**
+  The `bundles.liquid` file fetches `/apps/bundles` (Shopify proxy), which forwards to your backend `/api/bundles` endpoint.
+- **Backend Route:**
+  `api.bundles.jsx` returns bundles from your SQLite database using Prisma.
+- **Cloudflare Tunnel:**
+  Exposes your local app to the public internet at `app.yourdomain.com`.
+
+## Theme Extension Example (`bundles.liquid`)
+
+```liquid
+<script>
+  fetch('/apps/bundles')
+    .then(res => res.json())
+    .then(data => {
+      let html = '';
+      data.forEach(bundle => {
+        html += `<div><h3>${bundle.name}</h3><p>${bundle.description}</p></div>`;
+      });
+      document.getElementById('bundles-list').innerHTML = html;
+    });
+</script>
+<div id="bundles-list"></div>
+
+{% schema %}
+{
+  "name": "Bundles Block",
+  "target": "section",
+  "settings": []
+}
+{% endschema %}
+
+```
+
+## Security Best Practices
+
+- **Do NOT expose sensitive data** via the app proxy endpoint. Only return data meant for the storefront.
+- **Validate HMAC signatures** on all app proxy requests ([Shopify docs](https://shopify.dev/docs/apps/online-store/theme-app-extensions/app-proxies#verify-proxy-requests)).
+- **Use environment variables** for all secrets and API keys.
+- **Restrict allowed origins** if you add CORS to your backend.
+
+## Troubleshooting
+
+- **404 on `/apps/bundles` (storefront):**
+  - Confirm Shopify app proxy config in both Shopify admin and `shopify.app.toml`.
+  - Make sure Cloudflare tunnel and Remix app are running.
+  - Ensure `/api/bundles` route exists in Remix.
+- **Cloudflare tunnel not working:**
+  - Check your `config.yml` and tunnel status.
+  - Check Cloudflare dashboard for DNS propagation.
+- **Data not appearing in block:**
+  - Check browser console and network tab for errors.
+  - Check your `bundles.liquid` fetch code and backend response.
+
+## Credits
+
+- [Shopify Remix App Docs](https://shopify.dev/docs/api/shopify-app-remix)
+- [Cloudflare Tunnel Docs](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/)
+
+---
+
+If you have any issues, please double-check your domain, tunnel, and Shopify app proxy configs. Never share your real domain or secrets in public repos.
+
 
 ### Prerequisites
 
